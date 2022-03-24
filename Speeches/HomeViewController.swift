@@ -20,10 +20,12 @@ final class HomeViewController: UIViewController {
         return tableView
     }()
     private lazy var headerView = UIView()
+    private let maxHeight = UIScreen.main.bounds.height * 0.3
+    private let minHeight = UIScreen.main.bounds.height * 0.2
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
+        //        view.backgroundColor = .red
         
         mainTableView.sectionHeaderHeight = 0
         mainTableView.scrollsToTop = true
@@ -38,20 +40,19 @@ final class HomeViewController: UIViewController {
     }
     
     func configureUI() {
-        view.addSubview(headerView)
-
-        headerView.snp.makeConstraints { make in
-            make.leading.top.trailing.equalToSuperview()
-            make.height.equalTo(330)
-        }
-        headerView.backgroundColor = .systemPink
-        
         view.addSubview(mainTableView)
         mainTableView.snp.makeConstraints { make in
-            //            make.edges.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
-            make.top.equalTo(headerView.snp.bottom)
+            make.top.equalToSuperview().inset(minHeight)
         }
+        
+        view.addSubview(headerView)
+        headerView.snp.makeConstraints { make in
+            make.leading.top.trailing.equalToSuperview()
+            make.height.equalTo(minHeight)
+        }
+        headerView.backgroundColor = .systemPink
+        headerView.alpha = 0.2
     }
     
     func bindUI() {
@@ -63,65 +64,89 @@ final class HomeViewController: UIViewController {
                 cell.bodyTitle.text = element
             }.disposed(by: disposeBag)
         
-        mainTableView.rx.didEndDecelerating
-            .map({ [weak self] in
-                guard let self = self else { return false }
-                return self.mainTableView.contentOffset.y == 0
-            })
-            .bind(to: viewModel.isAttach)
-            .disposed(by: disposeBag)
+        //        mainTableView.rx.didScroll
+        //        mainTableView.rx.didEndDragging
+        //        mainTableView.rx.didEndDecelerating
+        //        mainTableView.isDragging
+        //        offset, inset
+        //        mainTableView.rx.willBeginDecelerating
+        //        mainTableView.rx.willEndDragging // 손뗄때 속도, 방향
         
-        
-        // didscroll될때와 attached된 상태일때,
-        // 스크롤 방향이 + 이고 isOPen이 아닐때 -> 펼침
-        // 스크롤 방향이 - 이고 isOpen일때 -> 접음
-        mainTableView.rx.didScroll
+        // 여기 작업중
+        mainTableView.rx.didEndDragging
             .asDriver()
-            .filter({ [weak self] in
-                guard let self = self else { return false }
-                return self.viewModel.isAttach.value == true
-            })
-            .drive(onNext: { [weak self] in
+            .drive(onNext: { [weak self] a in
                 guard let self = self else { return }
                 let offset = self.mainTableView.contentOffset.y
+                let inset = self.mainTableView.contentInset.top
                 let isOpen = self.viewModel.isOpen.value
-                
-                if offset < 0 && !isOpen {
-                    print(#function, #line, "펼친다")
-                    self.openHeaderView()
-                    self.viewModel.isOpen.accept(true)
-                } else if offset > 0 && isOpen {
-                    print(#function, #line, "접는다")
-                    self.collapseHeaderView()
-                    self.viewModel.isOpen.accept(false)
+                let isAttach = self.viewModel.isAttach.value
+                let minHeight = self.minHeight
+                let maxHeight = self.maxHeight
+                print(a, "offset:\(offset), inset:\(inset), isAttach:\(isAttach), isOpen:\(isOpen), min:\(minHeight), max:\(maxHeight)")
+                if isAttach {
+                    if -self.maxHeight...0 ~= offset && isOpen{
+                        UIView.animate(withDuration: 0.2) {
+                            self.mainTableView.contentInset.top = 0
+//                            self.mainTableView.contentOffset.y = 0
+                        }
+                        self.viewModel.isOpen.accept(false) // 다시 켜주는건 didScroll에서 해주고 있다
+                    } else if -self.maxHeight...0 ~= offset && !isOpen {
+                        UIView.animate(withDuration: 0.2) {
+                            self.mainTableView.contentInset.top = maxHeight
+//                            self.mainTableView.contentOffset.y = -maxHeight
+                        }
+                    }
                 }
             })
             .disposed(by: disposeBag)
         
-        viewModel.isOpen
-            .bind {
-                print(#function, #line, $0)
+        
+        mainTableView.rx.didScroll
+            .asDriver()
+            .drive(onNext: { [weak self] in
+                guard let self = self else { return }
+                let offset = self.mainTableView.contentOffset.y
+                let inset = self.mainTableView.contentInset.top
+                let isDragging = self.mainTableView.isDragging
+                let isOpen = self.viewModel.isOpen.value
+                let isAttach = self.viewModel.isAttach.value
+                let minHeight = self.minHeight
+                let maxHeight = self.maxHeight
                 
-            }
+                if offset == -inset {
+                    self.viewModel.isAttach.accept(true)
+                }
+                if inset == maxHeight {
+                    self.viewModel.isOpen.accept(true)
+                }
+                
+                print("offset: \(offset), inset: \(inset), isOpen: \(isOpen), isDragging: \(isDragging), max-min: \(maxHeight):\(minHeight)" )
+                
+                if 0...maxHeight ~= inset && isOpen {
+//                if -maxHeight...0 ~= offset && isOpen {
+                    self.mainTableView.contentInset.top = -offset
+//                    self.headerView.snp.updateConstraints { make in
+//                        make.height.equalTo(max(self.minHeight, self.minHeight-offset))
+//                    }
+                }
+            })
             .disposed(by: disposeBag)
         
-        //        viewModel.isAttach
-        //            .asDriver()
-        ////            .filter({$0})
-        //            .drive(onNext: {
-        //                print(#function, #line, "isAttach 상태", $0)
-        //            }).disposed(by: disposeBag)
-        
-    }
-    
-    private func collapseHeaderView() {
-        headerView.snp.updateConstraints { make in
-            make.height.equalTo(120)
-        }
-    }
-    private func openHeaderView() {
-        headerView.snp.updateConstraints { make in
-            make.height.equalTo(330)
-        }
+        viewModel.isAttach
+            .asDriver()
+//            .distinctUntilChanged()
+            .drive(onNext: {
+                print("isAttach: \($0)")
+            })
+            .disposed(by: disposeBag)
+        viewModel.isOpen
+            .asDriver()
+//            .distinctUntilChanged()
+            .drive(onNext: {
+                print("isOpen: \($0)")
+            })
+            .disposed(by: disposeBag)
     }
 }
+
