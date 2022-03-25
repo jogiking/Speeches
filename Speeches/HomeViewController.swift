@@ -27,7 +27,7 @@ final class HomeViewController: UIViewController {
         )
         return tableView
     }()
-    private lazy var headerView = UIView()
+    private lazy var headerView = HeaderView()
     private let maxHeight = UIScreen.main.bounds.height * 0.3
     private let minHeight = UIScreen.main.bounds.height * 0.2
     private var prevOffsetY: CGFloat = 0
@@ -50,7 +50,6 @@ final class HomeViewController: UIViewController {
             make.leading.top.trailing.equalToSuperview()
             make.height.equalTo(minHeight)
         }
-        headerView.backgroundColor = .systemPink
     }
     
     func bindUI() {
@@ -107,6 +106,8 @@ final class HomeViewController: UIViewController {
                 if offset == -inset { self.viewModel.isAttach.accept(true) }
                 if inset == self.maxHeight { self.viewModel.isOpen.accept(true) }
                 
+//                print(#line, self.headerView.frame.height)
+                
                 if -self.maxHeight...0 ~= offset {
                     if isOpen { self.mainTableView.contentInset.top = -offset }
                     if isDragging {
@@ -129,6 +130,14 @@ final class HomeViewController: UIViewController {
             })
             .disposed(by: disposeBag)
         
+        headerView.rx
+            .observe(CGRect.self, #keyPath(UIView.bounds))
+            .compactMap{$0}
+            .subscribe(onNext: { bounds in
+                print(#line, bounds)
+            })
+            .disposed(by: disposeBag)
+        
         viewModel.isAttach
             .asDriver()
         //            .distinctUntilChanged()
@@ -136,6 +145,7 @@ final class HomeViewController: UIViewController {
                 print("isAttach: \($0)")
             })
             .disposed(by: disposeBag)
+        
         viewModel.isOpen
             .asDriver()
         //            .distinctUntilChanged()
