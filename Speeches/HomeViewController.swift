@@ -22,6 +22,7 @@ final class HomeViewController: UIViewController {
     private lazy var headerView = UIView()
     private let maxHeight = UIScreen.main.bounds.height * 0.3
     private let minHeight = UIScreen.main.bounds.height * 0.2
+    private var prevOffsetY: CGFloat = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,7 +53,6 @@ final class HomeViewController: UIViewController {
             make.height.equalTo(minHeight)
         }
         headerView.backgroundColor = .systemPink
-        headerView.alpha = 0.2
     }
     
     func bindUI() {
@@ -63,19 +63,10 @@ final class HomeViewController: UIViewController {
             )){ index, element, cell in
                 cell.bodyTitle.text = element
             }.disposed(by: disposeBag)
-        
-        //        mainTableView.rx.didScroll
-        //        mainTableView.rx.didEndDragging
-        //        mainTableView.rx.didEndDecelerating
-        //        mainTableView.isDragging
-        //        offset, inset
-        //        mainTableView.rx.willBeginDecelerating
-        //        mainTableView.rx.willEndDragging // 손뗄때 속도, 방향
-        
-        // 여기 작업중
-        mainTableView.rx.didEndDragging
+    
+        mainTableView.rx.willEndDragging
             .asDriver()
-            .drive(onNext: { [weak self] a in
+            .drive(onNext: { [weak self] velocity, _ in
                 guard let self = self else { return }
                 let offset = self.mainTableView.contentOffset.y
                 let inset = self.mainTableView.contentInset.top
@@ -83,18 +74,29 @@ final class HomeViewController: UIViewController {
                 let isAttach = self.viewModel.isAttach.value
                 let minHeight = self.minHeight
                 let maxHeight = self.maxHeight
-                print(a, "offset:\(offset), inset:\(inset), isAttach:\(isAttach), isOpen:\(isOpen), min:\(minHeight), max:\(maxHeight)")
+                print(velocity.y, "offset:\(offset), inset:\(inset), isAttach:\(isAttach), isOpen:\(isOpen), min:\(minHeight), max:\(maxHeight)")
                 if isAttach {
-                    if -self.maxHeight...0 ~= offset && isOpen{
-                        UIView.animate(withDuration: 0.2) {
+                    if -self.maxHeight...0 ~= offset && isOpen && velocity.y >= 0{
+                        UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseOut) {
                             self.mainTableView.contentInset.top = 0
-//                            self.mainTableView.contentOffset.y = 0
+                            
+                            self.headerView.snp.updateConstraints { make in
+                                make.height.equalTo(minHeight)
+                                make.leading.top.trailing.equalToSuperview()
+                            }
+                            self.view.layoutIfNeeded()
                         }
-                        self.viewModel.isOpen.accept(false) // 다시 켜주는건 didScroll에서 해주고 있다
-                    } else if -self.maxHeight...0 ~= offset && !isOpen {
-                        UIView.animate(withDuration: 0.2) {
+                        // 다시 켜주는건 didScroll에도 켜주는 작업만 해주고 있다
+                        self.viewModel.isOpen.accept(false)
+                    } else if -self.maxHeight...0 ~= offset && !isOpen && velocity.y <= 0 {
+                        
+                        UIView.animate(withDuration: 0.2, delay: 0  , options: .curveEaseOut) {
                             self.mainTableView.contentInset.top = maxHeight
-//                            self.mainTableView.contentOffset.y = -maxHeight
+                            
+                            self.headerView.snp.updateConstraints { make in
+                                make.height.equalTo(maxHeight+minHeight)
+                            }
+                            self.view.layoutIfNeeded()
                         }
                     }
                 }
@@ -110,39 +112,54 @@ final class HomeViewController: UIViewController {
                 let inset = self.mainTableView.contentInset.top
                 let isDragging = self.mainTableView.isDragging
                 let isOpen = self.viewModel.isOpen.value
-                let isAttach = self.viewModel.isAttach.value
+                var isAttach = self.viewModel.isAttach.value
                 let minHeight = self.minHeight
                 let maxHeight = self.maxHeight
                 
+                
                 if offset == -inset {
                     self.viewModel.isAttach.accept(true)
+                    isAttach = true
                 }
+                
                 if inset == maxHeight {
                     self.viewModel.isOpen.accept(true)
                 }
                 
-                print("offset: \(offset), inset: \(inset), isOpen: \(isOpen), isDragging: \(isDragging), max-min: \(maxHeight):\(minHeight)" )
+                print("offset: \(offset), inset: \(inset), isAttach:\(isAttach), isOpen: \(isOpen), isDragging: \(isDragging), max-min: \(maxHeight):\(minHeight)" )
                 
-                if 0...maxHeight ~= inset && isOpen {
-//                if -maxHeight...0 ~= offset && isOpen {
-                    self.mainTableView.contentInset.top = -offset
-//                    self.headerView.snp.updateConstraints { make in
-//                        make.height.equalTo(max(self.minHeight, self.minHeight-offset))
-//                    }
+                if -maxHeight...0 ~= offset {
+                    if isOpen {
+                        self.mainTableView.contentInset.top = -offset
+                    }
+                    
+//                    print("내부에서 진행중,,offset=\(offset), inset=\(inset), diff=\(diff)")
+                    print("내부에서 진행중,,offset=\(offset), inset=\(inset)")
+                    if isDragging {
+                        let diff = offset - self.prevOffsetY
+                        self.headerView.snp.updateConstraints { make in
+//                            make.height.equalTo(minHeight-offset)
+                            make.height.equalTo(max(minHeight,
+                                                    min(maxHeight+minHeight,
+                                                        self.headerView.frame.height - diff)))
+                        }
+                        self.view.layoutIfNeeded()
+                        self.prevOffsetY = offset // 경계선에 닿았을 때 높이 갱신처리를 하지 않기 위해서 isDragging일 때만 갱신
+                    }
                 }
             })
             .disposed(by: disposeBag)
         
         viewModel.isAttach
             .asDriver()
-//            .distinctUntilChanged()
+        //            .distinctUntilChanged()
             .drive(onNext: {
                 print("isAttach: \($0)")
             })
             .disposed(by: disposeBag)
         viewModel.isOpen
             .asDriver()
-//            .distinctUntilChanged()
+        //            .distinctUntilChanged()
             .drive(onNext: {
                 print("isOpen: \($0)")
             })
