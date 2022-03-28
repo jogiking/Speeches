@@ -75,7 +75,6 @@ final class HomeViewController: UIViewController {
                             self.mainTableView.contentInset.top = 0
                             self.headerView.snp.updateConstraints { make in
                                 make.height.equalTo(self.minHeight)
-                                make.leading.top.trailing.equalToSuperview()
                             }
                             self.view.layoutIfNeeded()
                         }
