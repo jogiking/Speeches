@@ -9,6 +9,13 @@ import UIKit
 
 import SnapKit
 
+//
+//final class MyLabel: UILabel {
+//    override func draw(_ rect: CGRect) {
+//        super.draw(rect)
+//    }
+//}
+
 final class HeaderView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -22,7 +29,17 @@ final class HeaderView: UIView {
     private lazy var headline: UILabel = {
         let label = UILabel()
         label.text = "Sign up"
-        label.font = .preferredFont(forTextStyle: .headline)
+        label.textAlignment = .center
+        label.contentMode = .center // 이 부분을 redraw에서 center로 바꿔야 축소 애니메이션이 부드럽게됨
+        label.font = .preferredFont(forTextStyle: .largeTitle)
+        return label
+    }()
+    
+    private lazy var headline2: UILabel = {
+        let label = UILabel()
+        label.text = "or sign in"
+        label.textAlignment = .center
+        label.font = .preferredFont(forTextStyle: .largeTitle)
         return label
     }()
     
@@ -31,6 +48,13 @@ final class HeaderView: UIView {
         label.text = "to get started"
         label.font = .preferredFont(forTextStyle: .subheadline)
         return label
+    }()
+    
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "brain.head.profile")
+        imageView.contentMode = .scaleAspectFit
+        return imageView
     }()
     
     private lazy var createAccountButton: UIButton = {
@@ -43,20 +67,39 @@ final class HeaderView: UIView {
         return button
     }()
     
-    private let inset = 24
-    
-    // 접혔을때만 일단 생각하기
-    // label * 2
-    // button * 1
+    private let inset = UIScreen.main.bounds.width * 0.08
+
     private func configureUI() {
-        backgroundColor = .yellow
+        backgroundColor = .systemGray2
         
         addSubview(createAccountButton)
         createAccountButton.snp.makeConstraints { make in
             make.bottom.equalToSuperview().inset(inset)
             make.trailing.equalToSuperview().inset(inset)
             make.height.equalTo(HomeScene.minHeight * 0.3)
-            make.width.equalTo(self.snp.height).multipliedBy(0.8)
+            make.width.equalTo(self.snp.height).priority(600)
+            make.leading.greaterThanOrEqualTo(inset).priority(800)
         }
+        
+        addSubview(imageView)
+        imageView.snp.makeConstraints { make in
+            make.width.equalToSuperview().multipliedBy(0.3)
+            make.height.equalTo(imageView.snp.width)
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().inset(HomeScene.maxHeight)
+        }
+        
+        addSubview(headline)
+        headline.backgroundColor = .red
+        headline.snp.makeConstraints { make in
+            make.centerY.equalToSuperview().multipliedBy(1.2)
+            make.leading.equalTo(inset)
+            make.width.equalTo(self.snp.height).multipliedBy(UIScreen.main.bounds.width/HomeScene.maxHeight*0.45)
+        }
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        imageView.alpha = (frame.height - HomeScene.minHeight)/HomeScene.maxHeight
     }
 }
