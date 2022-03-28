@@ -28,8 +28,8 @@ final class HomeViewController: UIViewController {
         return tableView
     }()
     private lazy var headerView = HeaderView()
-    private let maxHeight = UIScreen.main.bounds.height * 0.3
-    private let minHeight = UIScreen.main.bounds.height * 0.2
+    private let maxHeight = HomeScene.maxHeight
+    private let minHeight = HomeScene.minHeight
     private var prevOffsetY: CGFloat = 0
     
     override func viewDidLoad() {
@@ -129,29 +129,29 @@ final class HomeViewController: UIViewController {
             })
             .disposed(by: disposeBag)
         
-        headerView.rx
-            .observe(CGRect.self, #keyPath(UIView.bounds))
-            .compactMap{$0}
-            .subscribe(onNext: { bounds in
-                print(#line, bounds)
-            })
-            .disposed(by: disposeBag)
-        
-        viewModel.isAttach
-            .asDriver()
-        //            .distinctUntilChanged()
-            .drive(onNext: {
-                print("isAttach: \($0)")
-            })
-            .disposed(by: disposeBag)
-        
-        viewModel.isOpen
-            .asDriver()
-        //            .distinctUntilChanged()
-            .drive(onNext: {
-                print("isOpen: \($0)")
-            })
-            .disposed(by: disposeBag)
+//        headerView.rx
+//            .observe(CGRect.self, #keyPath(UIView.bounds))
+//            .compactMap{$0}
+//            .subscribe(onNext: { bounds in
+//                print(#line, bounds)
+//            })
+//            .disposed(by: disposeBag)
+//        
+//        viewModel.isAttach
+//            .asDriver()
+//        //            .distinctUntilChanged()
+//            .drive(onNext: {
+//                print("isAttach: \($0)")
+//            })
+//            .disposed(by: disposeBag)
+//        
+//        viewModel.isOpen
+//            .asDriver()
+//        //            .distinctUntilChanged()
+//            .drive(onNext: {
+//                print("isOpen: \($0)")
+//            })
+//            .disposed(by: disposeBag)
     }
 }
 
