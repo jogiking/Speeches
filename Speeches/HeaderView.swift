@@ -9,13 +9,6 @@ import UIKit
 
 import SnapKit
 
-//
-//final class MyLabel: UILabel {
-//    override func draw(_ rect: CGRect) {
-//        super.draw(rect)
-//    }
-//}
-
 final class HeaderView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -26,8 +19,9 @@ final class HeaderView: UIView {
         configureUI()
     }
     
-    private lazy var headline: UILabel = {
-        let label = UILabel()
+    private lazy var headline: PadddingLabel = {
+        let label = PadddingLabel()
+        label.rightInset = 8
         label.text = "Sign up"
         label.textAlignment = .right
         label.contentMode = .right
@@ -37,8 +31,8 @@ final class HeaderView: UIView {
     
     private lazy var headline2: UILabel = {
         let label = UILabel()
-        label.text = " or sign in"
-        label.textAlignment = .center
+        label.text = "or sign in"
+        label.textAlignment = .left
         label.font = .preferredFont(forTextStyle: .largeTitle)
         return label
     }()
@@ -76,7 +70,7 @@ final class HeaderView: UIView {
         createAccountButton.snp.makeConstraints { make in
             make.bottom.equalToSuperview().inset(inset)
             make.trailing.equalToSuperview().inset(inset)
-            make.height.equalTo(HomeScene.minHeight * 0.3)
+            make.height.equalTo(44)
             make.width.equalTo(self.snp.height).priority(600)
             make.leading.greaterThanOrEqualTo(inset).priority(800)
         }
@@ -89,26 +83,33 @@ final class HeaderView: UIView {
         }
         
         addSubview(headline)
-//        headline.backgroundColor = .red
+        headline.backgroundColor = .red
         headline.snp.contentCompressionResistanceHorizontalPriority = 1000
         headline.snp.makeConstraints { make in
             make.top.equalTo(self.snp.centerY).multipliedBy(1.2).priority(800)
             make.top.greaterThanOrEqualTo(imageView.snp.bottom)
-            make.leading.equalTo(inset)
-            make.width.equalTo(self.snp.height).multipliedBy(0.5*0.8).priority(600)
+            make.leading.equalToSuperview().offset(inset)
+            make.width.equalTo(self.snp.height).multipliedBy(0.5).priority(600)
+            make.trailing.lessThanOrEqualToSuperview().inset(UIScreen.main.bounds.width * 0.5)
         }
         
         addSubview(headline2)
-//        headline2.backgroundColor = .purple
+        headline2.backgroundColor = .purple
+        headline2.snp.contentCompressionResistanceHorizontalPriority = 900
         headline2.snp.makeConstraints { make in
             make.centerY.equalTo(headline)
             make.leading.equalTo(headline.snp.trailing)
+            make.trailing.equalToSuperview().inset(inset)
         }
         
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        print(#function, frame.height, safeAreaInsets.top, frame.width, HomeScene.maxHeight, HomeScene.minHeight)
+        
         imageView.alpha = (frame.height - HomeScene.minHeight)/HomeScene.maxHeight
+//        headline2.alpha = (frame.height - HomeScene.minHeight)/HomeScene.maxHeight
     }
 }
+
