@@ -29,15 +29,15 @@ final class HeaderView: UIView {
     private lazy var headline: UILabel = {
         let label = UILabel()
         label.text = "Sign up"
-        label.textAlignment = .center
-        label.contentMode = .center // 이 부분을 redraw에서 center로 바꿔야 축소 애니메이션이 부드럽게됨
+        label.textAlignment = .right
+        label.contentMode = .right
         label.font = .preferredFont(forTextStyle: .largeTitle)
         return label
     }()
     
     private lazy var headline2: UILabel = {
         let label = UILabel()
-        label.text = "or sign in"
+        label.text = " or sign in"
         label.textAlignment = .center
         label.font = .preferredFont(forTextStyle: .largeTitle)
         return label
@@ -83,19 +83,28 @@ final class HeaderView: UIView {
         
         addSubview(imageView)
         imageView.snp.makeConstraints { make in
-            make.width.equalToSuperview().multipliedBy(0.3)
-            make.height.equalTo(imageView.snp.width)
+            make.size.equalTo(self.snp.width).multipliedBy(0.3)
             make.centerX.equalToSuperview()
-            make.bottom.equalToSuperview().inset(HomeScene.maxHeight)
+            make.bottom.equalToSuperview().inset(HomeScene.maxHeight * 0.6)
         }
         
         addSubview(headline)
-        headline.backgroundColor = .red
+//        headline.backgroundColor = .red
+        headline.snp.contentCompressionResistanceHorizontalPriority = 1000
         headline.snp.makeConstraints { make in
-            make.centerY.equalToSuperview().multipliedBy(1.2)
+            make.top.equalTo(self.snp.centerY).multipliedBy(1.2).priority(800)
+            make.top.greaterThanOrEqualTo(imageView.snp.bottom)
             make.leading.equalTo(inset)
-            make.width.equalTo(self.snp.height).multipliedBy(UIScreen.main.bounds.width/HomeScene.maxHeight*0.45)
+            make.width.equalTo(self.snp.height).multipliedBy(0.5*0.8).priority(600)
         }
+        
+        addSubview(headline2)
+//        headline2.backgroundColor = .purple
+        headline2.snp.makeConstraints { make in
+            make.centerY.equalTo(headline)
+            make.leading.equalTo(headline.snp.trailing)
+        }
+        
     }
     
     override func layoutSubviews() {

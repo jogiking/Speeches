@@ -8,6 +8,6 @@
 import UIKit
 
 enum HomeScene {
-    static let maxHeight = UIScreen.main.bounds.height * 0.3
-    static let minHeight = UIScreen.main.bounds.height * 0.2
+    static let maxHeight = UIScreen.main.bounds.width
+    static let minHeight = UIScreen.main.bounds.width * 0.3
 }
