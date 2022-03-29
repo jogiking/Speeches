@@ -21,11 +21,12 @@ final class HeaderView: UIView {
     
     private lazy var headline: PadddingLabel = {
         let label = PadddingLabel()
+        label.leftInset = 8
         label.rightInset = 8
-        label.text = "Sign up"
+        label.text = "Sign up "
         label.textAlignment = .right
         label.contentMode = .right
-        label.font = .preferredFont(forTextStyle: .largeTitle)
+        label.font = UIFont(name: FontType.bmDoHyeon.name, size: 34)
         return label
     }()
     
@@ -33,7 +34,7 @@ final class HeaderView: UIView {
         let label = UILabel()
         label.text = "or sign in"
         label.textAlignment = .left
-        label.font = .preferredFont(forTextStyle: .largeTitle)
+        label.font = UIFont(name: FontType.bmDoHyeon.name, size: 34)
         return label
     }()
     
@@ -46,7 +47,7 @@ final class HeaderView: UIView {
     
     private lazy var imageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "brain.head.profile")
+        imageView.image = UIImage(named: ImageType.studying.name)
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -69,11 +70,11 @@ final class HeaderView: UIView {
         return button
     }()
     
-    private let inset = HomeScene.inset //UIScreen.main.bounds.width * 0.08
+    private let inset = HomeScene.inset
     private let buttonHeight = UIScreen.main.bounds.width / 8
     
     private func configureUI() {
-        backgroundColor = .systemGray2
+        backgroundColor = .white
         
         addSubview(createAccountButton)
         createAccountButton.snp.makeConstraints { make in
@@ -84,7 +85,7 @@ final class HeaderView: UIView {
         }
         
         addSubview(signInButton)
-        signInButton.backgroundColor = .orange
+//        signInButton.backgroundColor = .orange
         signInButton.snp.makeConstraints { make in
             make.centerX.equalTo(createAccountButton.snp.centerX)
             make.top.equalTo(createAccountButton.snp.bottom)// .offset(8)
@@ -94,13 +95,18 @@ final class HeaderView: UIView {
         
         addSubview(imageView)
         imageView.snp.makeConstraints { make in
-            make.size.equalTo(self.snp.width).multipliedBy(0.3)
+            make.size.equalTo(self.snp.width).multipliedBy(0.5)
             make.centerX.equalToSuperview()
-            make.bottom.equalToSuperview().inset(HomeScene.maxHeight - HomeScene.minHeight * 0.25)
+            make.bottom.equalToSuperview().inset(HomeScene.maxHeight + HomeScene.minHeight - UIScreen.main.bounds.width / 2)
+//            HomeScene.maxHeight + HomeScene.minHeight - imageView.frame.height
         }
         
+        let width1 = headline.textSize.width
+        let width2 = headline2.textSize.width
+        let ratio = width1 / (width1 + width2)
+        
         addSubview(headline)
-        headline.backgroundColor = .red
+//        headline.backgroundColor = .red
         headline.snp.contentCompressionResistanceHorizontalPriority = 1000
         headline.snp.makeConstraints { make in
             make.top.equalTo(self.snp.centerY).priority(500)
@@ -109,13 +115,13 @@ final class HeaderView: UIView {
             make.top.lessThanOrEqualTo(createAccountButton.snp.top).priority(750)
             make.bottom.lessThanOrEqualTo(createAccountButton.snp.bottom)
             
-            make.leading.equalToSuperview().offset(inset*2)
+            make.leading.equalToSuperview().offset(inset)
             make.width.equalTo(self.snp.height).multipliedBy(0.5).priority(500)
-            make.trailing.lessThanOrEqualToSuperview().inset(UIScreen.main.bounds.width * 0.5)
+            make.trailing.lessThanOrEqualToSuperview().inset(UIScreen.main.bounds.width * (1-ratio))
         }
         
         addSubview(headline2)
-        headline2.backgroundColor = .purple
+//        headline2.backgroundColor = .purple
         headline2.snp.contentCompressionResistanceHorizontalPriority = 750
         headline2.snp.makeConstraints { make in
             make.centerY.equalTo(headline)
@@ -128,7 +134,6 @@ final class HeaderView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         let alpha = (frame.height - HomeScene.minHeight)/HomeScene.maxHeight
-        print(#function, frame, HomeScene.maxHeight, HomeScene.minHeight)
         imageView.alpha = alpha
         headline2.alpha = alpha
         signInButton.alpha = alpha
@@ -141,28 +146,39 @@ import SwiftUI
 
 @available(iOS 13.0, *)
 struct HeaderView_Preview: PreviewProvider {
-    static let devices = ["iPhone SE", "iPhone 12", "iPhone 12 Pro Max"]
+    struct Devices: Identifiable {
+        var id = UUID()
+        var name: String
+        var width: CGFloat
+        var height: CGFloat
+    }
+    static let devices = [Devices(name: "iPhone 12 mini", width: 375, height: 812),
+                          Devices(name: "iPhone 13", width: 390, height: 844),
+                          Devices(name: "iPhone 11", width: 414, height: 896),
+                          Devices(name: "iPhone SE (1st generation)", width: 320, height: 568)]
     static var previews: some View {
         Group {
-            ForEach(devices, id: \.self) { deviceName in
-                UIViewPreview {
-                    let width = UIScreen.main.bounds.width
-                    let height = HomeScene.minHeight
-                    let view = HeaderView(frame: CGRect(origin: .zero, size: CGSize(width: width, height: height)))
-                    return view
-                }
-                .previewDisplayName(deviceName)
-                .previewLayout(.fixed(width: UIScreen.main.bounds.width, height: HomeScene.maxHeight+HomeScene.minHeight))
+            ForEach(devices) { device in
                 
+                let width1 = device.width
+                let height1 = device.width * (0.8 + 0.35)
                 UIViewPreview {
-                    let width = UIScreen.main.bounds.width
-                    let height = HomeScene.minHeight
-                    let view = HeaderView(frame: CGRect(origin: .zero, size: CGSize(width: width, height: height)))
+                    let view  = HeaderView()
                     return view
                 }
-                .previewDisplayName(deviceName)
-                .previewDevice(PreviewDevice(rawValue: deviceName))
-                .previewLayout(.fixed(width: UIScreen.main.bounds.width, height: HomeScene.minHeight))
+                .previewDevice(PreviewDevice(rawValue: device.name))
+                .previewLayout(.fixed(width: width1, height: height1))
+                .previewDisplayName(device.name)
+                
+                let width2 = device.width
+                let height2 = device.width * 0.35
+                UIViewPreview {
+                    let view = HeaderView()
+                    return view
+                }
+                .previewDevice(PreviewDevice(rawValue: device.name))
+                .previewLayout(.fixed(width: width2, height: height2))
+                .previewDisplayName(device.name)
             }
         }
     }
