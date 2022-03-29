@@ -69,15 +69,16 @@ final class HeaderView: UIView {
         return button
     }()
     
-    private let inset = UIScreen.main.bounds.width * 0.08
-
+    private let inset = HomeScene.inset //UIScreen.main.bounds.width * 0.08
+    private let buttonHeight = UIScreen.main.bounds.width / 8
+    
     private func configureUI() {
         backgroundColor = .systemGray2
         
         addSubview(createAccountButton)
         createAccountButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(inset)
-            make.height.equalTo(44)
+            make.height.equalTo(buttonHeight)
             make.width.equalTo(self.snp.height).priority(500)
             make.leading.greaterThanOrEqualTo(inset).priority(750)
         }
@@ -86,9 +87,9 @@ final class HeaderView: UIView {
         signInButton.backgroundColor = .orange
         signInButton.snp.makeConstraints { make in
             make.centerX.equalTo(createAccountButton.snp.centerX)
-            make.top.equalTo(createAccountButton.snp.bottom).offset(8)
-            make.bottom.equalToSuperview().inset(8)
-            make.height.equalTo(self.snp.height).multipliedBy(16/HomeScene.maxHeight)
+            make.top.equalTo(createAccountButton.snp.bottom)// .offset(8)
+            make.bottom.equalToSuperview()//.inset(HomeScene.minHeight/4)
+            make.height.equalTo(self.snp.height).multipliedBy(buttonHeight/(HomeScene.maxHeight + HomeScene.minHeight))
         }
         
         addSubview(imageView)
@@ -102,13 +103,13 @@ final class HeaderView: UIView {
         headline.backgroundColor = .red
         headline.snp.contentCompressionResistanceHorizontalPriority = 1000
         headline.snp.makeConstraints { make in
-            make.top.equalTo(self.snp.centerY).multipliedBy(1.2).priority(500)
+            make.top.equalTo(self.snp.centerY).priority(500)
             make.top.greaterThanOrEqualTo(imageView.snp.bottom)
             
             make.top.lessThanOrEqualTo(createAccountButton.snp.top).priority(750)
             make.bottom.lessThanOrEqualTo(createAccountButton.snp.bottom)
             
-            make.leading.equalToSuperview().offset(inset)
+            make.leading.equalToSuperview().offset(inset*2)
             make.width.equalTo(self.snp.height).multipliedBy(0.5).priority(500)
             make.trailing.lessThanOrEqualToSuperview().inset(UIScreen.main.bounds.width * 0.5)
         }
@@ -127,9 +128,43 @@ final class HeaderView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         let alpha = (frame.height - HomeScene.minHeight)/HomeScene.maxHeight
+        print(#function, frame, HomeScene.maxHeight, HomeScene.minHeight)
         imageView.alpha = alpha
         headline2.alpha = alpha
         signInButton.alpha = alpha
     }
 }
 
+
+#if DEBUG
+import SwiftUI
+
+@available(iOS 13.0, *)
+struct HeaderView_Preview: PreviewProvider {
+    static let devices = ["iPhone SE", "iPhone 12", "iPhone 12 Pro Max"]
+    static var previews: some View {
+        Group {
+            ForEach(devices, id: \.self) { deviceName in
+                UIViewPreview {
+                    let width = UIScreen.main.bounds.width
+                    let height = HomeScene.minHeight
+                    let view = HeaderView(frame: CGRect(origin: .zero, size: CGSize(width: width, height: height)))
+                    return view
+                }
+                .previewDisplayName(deviceName)
+                .previewLayout(.fixed(width: UIScreen.main.bounds.width, height: HomeScene.maxHeight+HomeScene.minHeight))
+                
+                UIViewPreview {
+                    let width = UIScreen.main.bounds.width
+                    let height = HomeScene.minHeight
+                    let view = HeaderView(frame: CGRect(origin: .zero, size: CGSize(width: width, height: height)))
+                    return view
+                }
+                .previewDisplayName(deviceName)
+                .previewDevice(PreviewDevice(rawValue: deviceName))
+                .previewLayout(.fixed(width: UIScreen.main.bounds.width, height: HomeScene.minHeight))
+            }
+        }
+    }
+}
+#endif
