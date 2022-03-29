@@ -28,6 +28,27 @@ final class HomeViewController: UIViewController {
         return tableView
     }()
     private lazy var headerView = HeaderView()
+    
+    private lazy var addButton: UIButton = {
+        let width = UIScreen.main.bounds.width / 8
+        let button = UIButton(frame: CGRect(origin: .zero, size: CGSize(width: width, height: width)))
+        let image = UIImage(systemName: "plus", withConfiguration: UIImage.SymbolConfiguration(pointSize: width*0.7, weight: .regular))
+        button.setImage(image, for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = width/2
+        button.layer.masksToBounds = true
+        button.menu = addMenu
+        
+        return button
+    }()
+    
+    private lazy var addMenu: UIMenu = {
+        let favorite = UIAction(title: "ddddd", image: UIImage(systemName: "heart"), handler: { _ in print("ddddd") })
+        let menu = UIMenu(title: "title", image: nil, identifier: nil, options: .displayInline, children: [favorite])
+        return menu
+    }()
+    
     private let maxHeight = HomeScene.maxHeight
     private let minHeight = HomeScene.minHeight
     private var prevOffsetY: CGFloat = 0
@@ -39,16 +60,25 @@ final class HomeViewController: UIViewController {
     }
     
     func configureUI() {
+        view.backgroundColor = .white
         view.addSubview(mainTableView)
         mainTableView.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
-            make.top.equalToSuperview().inset(minHeight)
+            make.top.equalTo(view.safeAreaLayoutGuide).inset(minHeight)
         }
         
         view.addSubview(headerView)
         headerView.snp.makeConstraints { make in
-            make.leading.top.trailing.equalToSuperview()
+            make.leading.top.trailing.equalTo(view.safeAreaLayoutGuide)
             make.height.equalTo(minHeight)
+        }
+        
+        view.addSubview(addButton)
+        addButton.snp.makeConstraints { make in
+            make.size.equalTo(UIScreen.main.bounds.width/8)
+            make.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().inset(HomeScene.minHeight)
+            make.trailing.equalToSuperview().inset(HomeScene.inset)
         }
     }
     
@@ -136,7 +166,7 @@ final class HomeViewController: UIViewController {
 //                print(#line, bounds)
 //            })
 //            .disposed(by: disposeBag)
-//        
+//
 //        viewModel.isAttach
 //            .asDriver()
 //        //            .distinctUntilChanged()
@@ -144,7 +174,7 @@ final class HomeViewController: UIViewController {
 //                print("isAttach: \($0)")
 //            })
 //            .disposed(by: disposeBag)
-//        
+//
 //        viewModel.isOpen
 //            .asDriver()
 //        //            .distinctUntilChanged()
@@ -154,4 +184,6 @@ final class HomeViewController: UIViewController {
 //            .disposed(by: disposeBag)
     }
 }
+
+
 
