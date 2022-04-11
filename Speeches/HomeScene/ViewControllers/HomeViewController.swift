@@ -39,14 +39,26 @@ final class HomeViewController: UIViewController {
         button.layer.cornerRadius = width/2
         button.layer.masksToBounds = true
         button.menu = addMenu
+        button.showsMenuAsPrimaryAction = true
         
         return button
     }()
     
     private lazy var addMenu: UIMenu = {
-        let favorite = UIAction(title: "ddddd", image: UIImage(systemName: "heart"), handler: { _ in print("ddddd") })
-        let menu = UIMenu(title: "title", image: nil, identifier: nil, options: .displayInline, children: [favorite])
-        return menu
+        let menuElements = ContentsType.allCases.map { contents in
+            UIAction(
+                title: contents.titleDescription,
+                image: UIImage(systemName: contents.imageName),
+                handler: { _ in self.presentAddView(contents)}
+            )
+        }
+        return UIMenu(
+            title: "Add Contents",
+            image: nil,
+            identifier: nil,
+            options: .displayInline,
+            children: menuElements
+        )
     }()
     
     private let maxHeight = HomeScene.maxHeight
@@ -135,8 +147,6 @@ final class HomeViewController: UIViewController {
                 if offset == -inset { self.viewModel.isAttach.accept(true) }
                 if inset == self.maxHeight { self.viewModel.isOpen.accept(true) }
                 
-//                print(#line, self.headerView.frame.height)
-                
                 if -self.maxHeight...0 ~= offset {
                     if isOpen { self.mainTableView.contentInset.top = -offset }
                     if isDragging {
@@ -158,30 +168,22 @@ final class HomeViewController: UIViewController {
                 }
             })
             .disposed(by: disposeBag)
+    }
+    
+    private func presentAddView(_ contents: ContentsType) {
         
-//        headerView.rx
-//            .observe(CGRect.self, #keyPath(UIView.bounds))
-//            .compactMap{$0}
-//            .subscribe(onNext: { bounds in
-//                print(#line, bounds)
-//            })
-//            .disposed(by: disposeBag)
-//
-//        viewModel.isAttach
-//            .asDriver()
-//        //            .distinctUntilChanged()
-//            .drive(onNext: {
-//                print("isAttach: \($0)")
-//            })
-//            .disposed(by: disposeBag)
-//
-//        viewModel.isOpen
-//            .asDriver()
-//        //            .distinctUntilChanged()
-//            .drive(onNext: {
-//                print("isOpen: \($0)")
-//            })
-//            .disposed(by: disposeBag)
+        switch contents {
+        case .plainText:
+            let viewController = AddTextViewController()
+            viewController.modalPresentationStyle = .pageSheet
+            self.present(viewController, animated: true)
+        case .webURL:
+            print(#function, #line, contents)
+        case .image:
+            print(#function, #line, contents)
+        case .scan:
+            print(#function, #line, contents)
+        }
     }
 }
 
