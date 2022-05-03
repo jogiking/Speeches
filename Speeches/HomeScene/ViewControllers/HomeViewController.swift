@@ -178,7 +178,9 @@ final class HomeViewController: UIViewController {
             viewController.modalPresentationStyle = .pageSheet
             self.present(viewController, animated: true)
         case .webURL:
-            print(#function, #line, contents)
+            let viewController = AddURLViewController()
+            viewController.modalPresentationStyle = .pageSheet
+            self.present(viewController, animated: true)
         case .image:
             print(#function, #line, contents)
         case .scan:
