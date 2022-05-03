@@ -63,6 +63,7 @@ final class HomeViewController: UIViewController {
     
     private let maxHeight = HomeScene.maxHeight
     private let minHeight = HomeScene.minHeight
+    private let inset = HomeScene.inset
     private var prevOffsetY: CGFloat = 0
     
     override func viewDidLoad() {
@@ -89,8 +90,8 @@ final class HomeViewController: UIViewController {
         addButton.snp.makeConstraints { make in
             make.size.equalTo(UIScreen.main.bounds.width/8)
             make.trailing.equalToSuperview()
-            make.bottom.equalToSuperview().inset(HomeScene.minHeight)
-            make.trailing.equalToSuperview().inset(HomeScene.inset)
+            make.bottom.equalToSuperview().inset(minHeight)
+            make.trailing.equalToSuperview().inset(inset)
         }
     }
     
