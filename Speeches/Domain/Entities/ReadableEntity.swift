@@ -9,7 +9,7 @@ import Foundation
 
 struct ReadableEntity {
     var date: String
-    var imageURL: String?
+    var imageURL: [String]
     var title: String
     var contents: String
 }
@@ -17,7 +17,7 @@ struct ReadableEntity {
 extension ReadableEntity: Persistable {
     init(managedObject: ReadableEntityObject) {
         self.date = managedObject.date
-        self.imageURL = managedObject.imageURL
+        self.imageURL = Array(managedObject.imageURL)
         self.title = managedObject.title
         self.contents = managedObject.contents
     }
@@ -25,7 +25,7 @@ extension ReadableEntity: Persistable {
     func managedObject() -> ReadableEntityObject {
         let readable = ReadableEntityObject()
         readable.date = self.date
-        readable.imageURL = self.imageURL
+        readable.imageURL.append(objectsIn: self.imageURL)
         readable.title = self.title
         readable.contents = self.contents
         return readable

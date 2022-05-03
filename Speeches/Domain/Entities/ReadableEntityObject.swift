@@ -11,7 +11,7 @@ import RealmSwift
 
 class ReadableEntityObject: Object {
     @Persisted var date: String
-    @Persisted var imageURL: String?
+    @Persisted var imageURL: List<String>
     @Persisted var title: String
     @Persisted var contents: String
 }
