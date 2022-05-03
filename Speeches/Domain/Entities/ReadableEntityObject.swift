@@ -10,7 +10,7 @@ import Foundation
 import RealmSwift
 
 class ReadableEntityObject: Object {
-    @Persisted var id: Int
+    @Persisted var date: String
     @Persisted var imageURL: String?
     @Persisted var title: String
     @Persisted var contents: String
