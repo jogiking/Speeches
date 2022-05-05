@@ -28,7 +28,7 @@ final class HomeViewModel {
             guard let self = self else {
                 return
             }
-            print(#function, #line, "size=\(entities.count)")
+            
             let relays = entities.map {
                 BehaviorRelay<ReadableEntity>(value: $0)
             }
@@ -42,5 +42,21 @@ final class HomeViewModel {
     
     func update() {
         fetchDatasource()
+    }
+    
+    func removeItem(_ indexPath: IndexPath, onErrorCompletion: @escaping (Error) -> Void) {
+        var items = dataSource.value
+        let entity = items[indexPath.row].value
+        
+        readableRepository.delete(entity).subscribe(
+            onSuccess: { successed in
+                if successed {
+                    items.remove(at: indexPath.row)
+                    self.dataSource.accept(items)
+                }
+            }, onFailure: { error in
+                onErrorCompletion(error)
+            })
+        .disposed(by: disposeBag)
     }
 }

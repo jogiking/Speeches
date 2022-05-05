@@ -68,6 +68,7 @@ final class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        mainTableView.delegate = self
         configureUI()
         bindUI()
     }
@@ -119,6 +120,13 @@ final class HomeViewController: UIViewController {
             ) { index, item, cell in
                 cell.bind(item)
             }.disposed(by: disposeBag)
+                
+        mainTableView.rx.itemDeleted.subscribe { indexPath in
+            self.viewModel.removeItem(indexPath) { error in
+                self.presentAlert(title: "Remove Fail", message: error.localizedDescription)
+            }
+        }
+        .disposed(by: disposeBag)
         
         mainTableView.rx.willEndDragging
             .asDriver()
@@ -204,7 +212,20 @@ final class HomeViewController: UIViewController {
             print(#function, #line, contents)
         }
     }
+    
+    private func presentAlert(title: String, message: String? = nil) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alertAction = UIAlertAction(title: "OK", style: .cancel)
+        alert.addAction(alertAction)
+        present(alert, animated: true)
+    }
+    
 }
 
+// MARK: - Extensions
 
-
+extension HomeViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+}
