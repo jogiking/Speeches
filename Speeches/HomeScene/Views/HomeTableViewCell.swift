@@ -46,9 +46,10 @@ class HomeTableViewCell: UITableViewCell {
             imageView.image = nil
         }
         
+        disposeBag = DisposeBag()
         headerTitle.text = ""
         bodyTitle.text = ""
-        disposeBag = DisposeBag()
+        
         configureUI()
     }
     
