@@ -14,7 +14,7 @@ final class RealmManager {
     
     static let shared = RealmManager()
     
-    private var realm = try? Realm()
+    private let realm = try? Realm()
     
     func create<T: Object>(_ object: T) throws {
         guard let realm = realm else {
@@ -30,12 +30,17 @@ final class RealmManager {
         }
     }
     
-    func read<T: Object>(_ type: T.Type) throws -> [T] {
+    func read<T: Object>(_ type: T.Type, keyPath: String? = nil) throws -> [T] {
         guard let realm = realm else {
             throw RealmError.initializeFailed
         }
         
-        return Array(realm.objects(type.self))
+        if let keyPath = keyPath {
+            return Array(realm.objects(type).sorted(byKeyPath: keyPath, ascending: true))
+        } else {
+            return Array(realm.objects(type))
+        }
+        
     }
     
     func update<T: Object>(_ object: T, with dictionary: [String: Any?]) throws {

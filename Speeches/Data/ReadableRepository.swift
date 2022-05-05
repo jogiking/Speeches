@@ -15,7 +15,7 @@ enum ReadableRepositoryError: Error {
     case deleteFailed
 }
 
-class ReadableRepository {
+class ReadableRepository: ReadableRepositoryProtocol {
     
     func fetch() -> Single<[ReadableEntity]> {
         return Single.create { single in
@@ -48,11 +48,18 @@ class ReadableRepository {
     func delete(_ entity: ReadableEntity) -> Single<Bool> {
         return Single.create { single in
             do {
-                try RealmManager.shared.delete(entity.managedObject())
+                let readableEntityObjects = try RealmManager.shared.read(ReadableEntityObject.self)
+                
+                if let object = readableEntityObjects.first (where: { $0.date == entity.date }) {
+                    try RealmManager.shared.delete(object)
+                    single(.success(true))
+                } else {
+                    single(.success(false))
+                }
             } catch {
                 single(.failure(ReadableRepositoryError.deleteFailed))
             }
-            single(.success(true))
+            
             return Disposables.create()
         }
     }

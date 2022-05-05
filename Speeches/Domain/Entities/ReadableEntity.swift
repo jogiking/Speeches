@@ -12,6 +12,7 @@ struct ReadableEntity {
     var imageURL: [String]
     var title: String
     var contents: String
+    var url: String?
 }
 
 extension ReadableEntity: Persistable {
@@ -20,6 +21,7 @@ extension ReadableEntity: Persistable {
         self.imageURL = Array(managedObject.imageURL)
         self.title = managedObject.title
         self.contents = managedObject.contents
+        self.url = managedObject.url
     }
     
     func managedObject() -> ReadableEntityObject {
@@ -28,6 +30,7 @@ extension ReadableEntity: Persistable {
         readable.imageURL.append(objectsIn: self.imageURL)
         readable.title = self.title
         readable.contents = self.contents
+        readable.url = self.url
         return readable
     }
 }

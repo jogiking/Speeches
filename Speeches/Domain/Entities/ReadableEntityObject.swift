@@ -14,4 +14,5 @@ class ReadableEntityObject: Object {
     @Persisted var imageURL: List<String>
     @Persisted var title: String
     @Persisted var contents: String
+    @Persisted var url: String?
 }

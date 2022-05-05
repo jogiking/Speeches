@@ -74,9 +74,10 @@ class AddTextViewController: UIViewController {
         
         ReadableRepository().save(entity).subscribe { event in
             switch event {
-            case .success(let flag):
-                // TODO: Home 화면으로 돌아가기
-                print(#function, #line, flag)
+            case .success(_):
+                NotificationCenter.default.post(name: Notification.Name.readableRepositoryChanged, object: nil)
+                self.dismiss(animated: true)
+                
             case .failure(let error):
                 self.presentAlert(error.localizedDescription)
             }
