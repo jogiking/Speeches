@@ -14,6 +14,8 @@ final class HomeViewModel {
     lazy var dataSource = BehaviorRelay<[BehaviorRelay<ReadableEntity>]>(value: [])
     var isAttach = BehaviorRelay<Bool>(value: true)
     var isOpen = BehaviorRelay<Bool>(value: false)
+    var disposeBag = DisposeBag()
+    
     private let readableRepository: ReadableRepositoryProtocol
     
     init(readableRespository: ReadableRepositoryProtocol) {
@@ -22,7 +24,20 @@ final class HomeViewModel {
     }
     
     private func fetchDatasource() {
-        
+        readableRepository.fetch().subscribe { [weak self] entities in
+            guard let self = self else {
+                return
+            }
+            print(#function, #line, "size=\(entities.count)")
+            let relays = entities.map {
+                BehaviorRelay<ReadableEntity>(value: $0)
+            }
+            
+            self.dataSource.accept(relays)
+            
+        } onFailure: { error in
+            print(#function, #line, error.localizedDescription)
+        }.disposed(by: disposeBag)
     }
     
     func update() {

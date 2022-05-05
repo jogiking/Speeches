@@ -49,6 +49,7 @@ class HomeTableViewCell: UITableViewCell {
         headerTitle.text = ""
         bodyTitle.text = ""
         disposeBag = DisposeBag()
+        configureUI()
     }
     
     private func configureUI() {
@@ -84,6 +85,15 @@ class HomeTableViewCell: UITableViewCell {
     
     func bind(_ relay: BehaviorRelay<ReadableEntity>) {
         
+        relay.subscribe(onNext: {
+            [weak self] entity in
+            guard let self = self else {
+                return
+            }
+            self.headerTitle.text = entity.title
+            self.bodyTitle.text = entity.contents
+        })
+        .disposed(by: disposeBag)
     }
     
 }
