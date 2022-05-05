@@ -14,7 +14,7 @@ import SnapKit
 final class HomeViewController: UIViewController {
     
     private var disposeBag = DisposeBag()
-    private var viewModel = HomeViewModel()
+    private var viewModel = HomeViewModel(readableRespository: ReadableRepository())
     private lazy var mainTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.sectionHeaderHeight = 0
@@ -72,6 +72,20 @@ final class HomeViewController: UIViewController {
         bindUI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateViewModel), name: .readableRepositoryChanged, object: nil)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc func updateViewModel() {
+        viewModel.update()
+    }
+    
     func configureUI() {
         view.backgroundColor = .white
         view.addSubview(mainTableView)
@@ -96,14 +110,16 @@ final class HomeViewController: UIViewController {
     }
     
     func bindUI() {
-        viewModel.testDataSource
-            .bind(to: mainTableView.rx.items(
-                cellIdentifier: HomeTableViewCell.identifier,
-                cellType: HomeTableViewCell.self
-            )){ index, element, cell in
-                cell.bodyTitle.text = element
+        viewModel.dataSource
+            .bind(
+                to: mainTableView.rx.items(
+                    cellIdentifier: HomeTableViewCell.identifier,
+                    cellType: HomeTableViewCell.self
+                )
+            ) { index, item, cell in
+                cell.bind(item)
             }.disposed(by: disposeBag)
-    
+        
         mainTableView.rx.willEndDragging
             .asDriver()
             .drive(onNext: { [weak self] velocity, _ in
@@ -144,7 +160,7 @@ final class HomeViewController: UIViewController {
                 let inset = self.mainTableView.contentInset.top
                 let isDragging = self.mainTableView.isDragging
                 let isOpen = self.viewModel.isOpen.value
-                            
+                
                 if offset == -inset { self.viewModel.isAttach.accept(true) }
                 if inset == self.maxHeight { self.viewModel.isOpen.accept(true) }
                 

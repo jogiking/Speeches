@@ -11,7 +11,21 @@ import RxRelay
 import RxSwift
 
 final class HomeViewModel {
-    var testDataSource = Observable<[String]>.just((1...30).map{String($0)})
+    lazy var dataSource = BehaviorRelay<[BehaviorRelay<ReadableEntity>]>(value: [])
     var isAttach = BehaviorRelay<Bool>(value: true)
     var isOpen = BehaviorRelay<Bool>(value: false)
+    private let readableRepository: ReadableRepositoryProtocol
+    
+    init(readableRespository: ReadableRepositoryProtocol) {
+        self.readableRepository = readableRespository
+        fetchDatasource()
+    }
+    
+    private func fetchDatasource() {
+        
+    }
+    
+    func update() {
+        fetchDatasource()
+    }
 }
