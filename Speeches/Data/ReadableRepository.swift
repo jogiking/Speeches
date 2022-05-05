@@ -15,7 +15,7 @@ enum ReadableRepositoryError: Error {
     case deleteFailed
 }
 
-class ReadableRepository {
+class ReadableRepository: ReadableRepositoryProtocol {
     
     func fetch() -> Single<[ReadableEntity]> {
         return Single.create { single in
