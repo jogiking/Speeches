@@ -173,8 +173,9 @@ final class HomeViewController: UIViewController {
                 if inset == self.maxHeight { self.viewModel.isOpen.accept(true) }
                 
                 if -self.maxHeight...0 ~= offset {
-                    if isOpen { self.mainTableView.contentInset.top = -offset }
                     if isDragging {
+                        if isOpen { self.mainTableView.contentInset.top = -offset }
+                        
                         let diff = offset - self.prevOffsetY
                         self.headerView.snp.updateConstraints { make in
                             make.height.equalTo(
@@ -187,7 +188,6 @@ final class HomeViewController: UIViewController {
                                 )
                             )
                         }
-                        self.view.layoutIfNeeded()
                         self.prevOffsetY = offset // 경계선에 닿았을 때 높이 갱신처리를 하지 않기 위해서 isDragging일 때만 갱신
                     }
                 }
