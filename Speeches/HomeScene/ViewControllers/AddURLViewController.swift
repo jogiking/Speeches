@@ -51,11 +51,25 @@ class AddURLViewController: UIViewController {
     }
     
     @objc private func addBarButtonTouched(_ sender: UIBarButtonItem) {
-        guard let documentTitle = urlInputField.text,
-              !documentTitle.isEmpty
+        guard let urlString = urlInputField.text,
+              !urlString.isEmpty
         else {
             return
         }
+        
+        let entity = ReadableEntity(date: Date().currentDateString,
+                                    imageURL: [], title: "", contents: "", url: urlString)
+        
+        ReadableRepository().save(entity).subscribe { event in
+            switch event {
+            case .success(_):
+                NotificationCenter.default.post(name: Notification.Name.readableRepositoryChanged, object: nil)
+                self.dismiss(animated: true)
+                
+            case .failure(let error):
+                self.presentAlert(error.localizedDescription)
+            }
+        }.disposed(by: disposeBag)
     }
     
     private func presentAlert(_ description: String) {
